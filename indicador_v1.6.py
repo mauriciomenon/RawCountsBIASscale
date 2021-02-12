@@ -3,11 +3,8 @@ import tkinter as tk
 app = tk.Tk()
 app.title( "Pontos Analógicos SCADA: Raw Counts & BIAS/SCALE")
 
-#app.geometry
-
 # DISCLAIMER:
 # NÃO É RECOMENDADO MISTURAR OS LAYOUT MANAGERS `pack` E `grid`
-
 # ----------------------------------------------------------------------
 # FRAME de valores em miliamperes
 amp_frame = tk.LabelFrame(app, text="Valores de Corrente do Transdutor (mA)", padx=10, pady=5)
@@ -108,12 +105,7 @@ def calcular():
     l_cal_bias_val["text"] = str(bias)
     l_cal_scale_val["text"]= str(scale)
 
-
-    gauge = tk.Gauge(app, max_value=100.0, label='speed', unit='km/h')
-    gauge.grid()
-    gauge.set_value(10)
-
-         
+       
     #print (float(bias))
     return "break"
 
