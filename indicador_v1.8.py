@@ -150,3 +150,4 @@ b_calcular.pack()
 # BINDINGS
 app.bind_all("<Return>", lambda x: calcular())
 app.mainloop()
+
