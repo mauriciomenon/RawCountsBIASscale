@@ -141,7 +141,6 @@ def calcular():
     #print (int(raw_int16))
     return "break"
 
-
 # ----------------------------------------------------------------------
 # BUTTON calcular
 b_calcular = tk.Button(app, text="Calcular", command=calcular)
@@ -150,4 +149,3 @@ b_calcular.pack()
 # BINDINGS
 app.bind_all("<Return>", lambda x: calcular())
 app.mainloop()
-
