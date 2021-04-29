@@ -1,4 +1,5 @@
 import tkinter as tk
+import tk_tools
 
 app = tk.Tk()
 app.title( "Pontos Analógicos SCADA: Raw Counts & BIAS/SCALE")
@@ -132,20 +133,43 @@ def calcular():
     l_cal_scale_val["text"]= str(scale)
     l_cal_val_int["text"]= str(raw_int16)
     l_cal_val_hex["text"]= str(raw_hexa16)
-
-    #gauge = tk.Gauge(app, max_value=100.0, label='speed', unit='km/h')
-    #gauge.grid()
-    #gauge.set_value(10)
-
-         
+       
     #print (int(raw_int16))
     return "break"
+
+
+#teste###########################################################################################
+graph_frame = tk.LabelFrame(app, text="Gráfico", padx=10, pady=5)
+bias_graph = tk_tools.Graph(
+        parent=graph_frame,
+        x_min=-1.0,
+        x_max=1.0,
+        y_min=0.0,
+        y_max=2.0,
+        x_tick=0.2,
+        y_tick=0.2,
+        width=500,
+        height=400
+    )
+
+bias_graph.grid(row=0, column=0)
+# create an initial line
+line_0 = [(x/10, x/10) for x in range(10)]
+print(line_0)
+bias_graph.plot_line(line_0)
+graph_frame.pack(fill="both", expand="yes")
+
 
 # ----------------------------------------------------------------------
 # BUTTON calcular
 b_calcular = tk.Button(app, text="Calcular", command=calcular)
 b_calcular.pack()
 
+
+#fim teste########################################################################################
+
 # BINDINGS
 app.bind_all("<Return>", lambda x: calcular())
 app.mainloop()
+
+
