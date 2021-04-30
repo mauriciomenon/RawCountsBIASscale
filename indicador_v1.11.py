@@ -111,30 +111,42 @@ l_cal_val_hex.grid(row=2, column=1, sticky=(tk.W, tk.E))
 # ----------------------------------------------------------------------
 # FRAME do gráfico
 graph_frame = tk.LabelFrame(app, text="Gráfico", padx=10, pady=5)
-
+bias_graph = tk_tools.Graph(
+    parent=graph_frame,
+    x_min=-1.0,
+    x_max=32767,
+    y_min=0.0,
+    y_max=10.0,
+    x_tick=8192,
+    y_tick=2.5,
+    width=300,
+    height=300
+)
+bias_graph.grid(row=0, column=0)
 graph_frame.pack(fill="both", expand="yes")
 
 #----------------------------------------------------------------------
 # FUNCTION plotar
 def plotar():
-    graph_frame = tk.LabelFrame(app, text="Gráfico", padx=10, pady=5)
+    #graph_frame = tk.LabelFrame(app, text="Gráfico", padx=10, pady=5)
     bias_graph = tk_tools.Graph(
         parent=graph_frame,
-        x_min=-1.0,
-        x_max=1.0,
-        y_min=0.0,
-        y_max=2.0,
-        x_tick=0.2,
-        y_tick=0.2,
+        x_min=-1,
+        x_max=32767,
+        y_min=bias,
+        y_max=scale,
+        x_tick=8192,
+        y_tick=(scale-bias)/4,
         width=300,
         height=300
     )
 
     bias_graph.grid(row=0, column=0)
     # create an initial line
-    line_0 = [(x/10, x/10) for x in range(10)]
+    line_0 = ((0,bias),(32767,scale))
     print(line_0)
     bias_graph.plot_line(line_0)
+    #evita a abertura de frames multiplos mas também não atualiza os valores
     graph_frame.pack(fill="both", expand="yes")
     return "break"
 
@@ -152,6 +164,7 @@ def calcular():
         bias = float ((f_e_ran_sup_neg  +(5*float(ptr_e_ran_inf.get())))/4)
         scale = float(ptr_e_ran_sup.get()) #versoes antigas erro com ran_inf
         #considerado valores positivos de corrente para raw_int16, caso seja negativo não tem o -1
+        #verificar se o /20 nao pode ser sunstituido pelo variavel de fundo de escala amperimetro (20ma)
         raw_int16 = int ((corrente/20)*(2**15-1)) 
         raw_hexa16 = hex(raw_int16) #TO DO tratamento de erro
                       
