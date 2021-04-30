@@ -1,8 +1,9 @@
 import tkinter as tk
 import tk_tools
+from tkinter import messagebox
 
 app = tk.Tk()
-app.title( "Pontos Analógicos SCADA: Raw Counts & BIAS/SCALE")
+app.title( "SCADA: Raw Counts & BIAS/SCALE")
 
 #app.geometry
 
@@ -108,13 +109,24 @@ l_cal_val_hex = tk.Label(return_frame_utr, text="--", anchor=tk.W)
 l_cal_text_hex.grid(row=2, column=0, sticky=(tk.W, tk.E))
 l_cal_val_hex.grid(row=2, column=1, sticky=(tk.W, tk.E))
 
+#-----------------------------------------------------------------------
+#FUNCTION acionar botao (parametros multiplos)
+def acionar():
+    calcular()
+    plotar()
+    return "break"
+# ----------------------------------------------------------------------
+# BUTTON calcular
+b_calcular = tk.Button(app, text="Calcular", height=2, width=10, command=acionar)
+b_calcular.pack()
+
 # ----------------------------------------------------------------------
 # FRAME do gráfico
-graph_frame = tk.LabelFrame(app, text="Gráfico", padx=10, pady=5)
+graph_frame = tk.LabelFrame(app, text="Gráfico BIAS/SCALE", padx=10, pady=5)
 bias_graph = tk_tools.Graph(
     parent=graph_frame,
-    x_min=-1.0,
-    x_max=32767,
+    x_min=0,
+    x_max=32768,
     y_min=0.0,
     y_max=10.0,
     x_tick=8192,
@@ -131,9 +143,10 @@ def plotar():
     #graph_frame = tk.LabelFrame(app, text="Gráfico", padx=10, pady=5)
     bias_graph = tk_tools.Graph(
         parent=graph_frame,
-        x_min=-1,
-        x_max=32767,
-        y_min=bias,
+        x_min=-0,
+        x_max=32768,
+        #y_min=bias,
+        y_min=0,
         y_max=scale,
         x_tick=8192,
         y_tick=(scale-bias)/4,
@@ -144,8 +157,7 @@ def plotar():
     bias_graph.grid(row=0, column=0)
     # create an initial line
     line_0 = ((0,bias),(32767,scale))
-    print(line_0)
-    bias_graph.plot_line(line_0)
+    bias_graph.plot_line(line_0,color='black',point_visibility=True)
     #evita a abertura de frames multiplos mas também não atualiza os valores
     graph_frame.pack(fill="both", expand="yes")
     return "break"
@@ -179,19 +191,20 @@ def calcular():
        
     #print (int(raw_int16))
     return "break"
-#-----------------------------------------------------------------------
-#FUNCTION acionar botao (parametros multiplos)
-def acionar():
-    calcular()
-    plotar()
+
+
+#------------------------------------------------------
+#acao botao info
+def about():
+    messagebox.showinfo("About", "Versão 1.11; tk/Python; Maurício Menon")
     return "break"
-# ----------------------------------------------------------------------
-# BUTTON calcular
-b_calcular = tk.Button(app, text="Calcular", command=acionar)
-b_calcular.pack()
-
 #-----------------------------------------------------------------------
+#BUTTON about
+b_about= tk.Button(app, text="About", command=about)
+b_about.place(x=0,y=0)
+b_about.pack()
 
+#------------------------------
 # BINDINGS
 app.bind_all("<Return>", lambda x: calcular())
 app.mainloop()
