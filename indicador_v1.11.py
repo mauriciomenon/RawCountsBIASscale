@@ -108,6 +108,35 @@ l_cal_val_hex = tk.Label(return_frame_utr, text="--", anchor=tk.W)
 l_cal_text_hex.grid(row=2, column=0, sticky=(tk.W, tk.E))
 l_cal_val_hex.grid(row=2, column=1, sticky=(tk.W, tk.E))
 
+# ----------------------------------------------------------------------
+# FRAME do gráfico
+graph_frame = tk.LabelFrame(app, text="Gráfico", padx=10, pady=5)
+
+graph_frame.pack(fill="both", expand="yes")
+
+#----------------------------------------------------------------------
+# FUNCTION plotar
+def plotar():
+    graph_frame = tk.LabelFrame(app, text="Gráfico", padx=10, pady=5)
+    bias_graph = tk_tools.Graph(
+        parent=graph_frame,
+        x_min=-1.0,
+        x_max=1.0,
+        y_min=0.0,
+        y_max=2.0,
+        x_tick=0.2,
+        y_tick=0.2,
+        width=300,
+        height=300
+    )
+
+    bias_graph.grid(row=0, column=0)
+    # create an initial line
+    line_0 = [(x/10, x/10) for x in range(10)]
+    print(line_0)
+    bias_graph.plot_line(line_0)
+    graph_frame.pack(fill="both", expand="yes")
+    return "break"
 
 # ----------------------------------------------------------------------
 # FUNCTION calcular
@@ -137,37 +166,22 @@ def calcular():
        
     #print (int(raw_int16))
     return "break"
-
+#-----------------------------------------------------------------------
+#FUNCTION acionar botao (parametros multiplos)
+def acionar():
+    calcular()
+    plotar()
+    return "break"
 # ----------------------------------------------------------------------
 # BUTTON calcular
-b_calcular = tk.Button(app, text="Calcular", command=calcular)
+b_calcular = tk.Button(app, text="Calcular", command=acionar)
 b_calcular.pack()
 
 #-----------------------------------------------------------------------
-# GRAFICO
-graph_frame = tk.LabelFrame(app, text="Gráfico", padx=10, pady=5)
-bias_graph = tk_tools.Graph(
-        parent=graph_frame,
-        x_min=-1.0,
-        x_max=1.0,
-        y_min=0.0,
-        y_max=2.0,
-        x_tick=0.2,
-        y_tick=0.2,
-        width=300,
-        height=300
-    )
-
-bias_graph.grid(row=0, column=0)
-# create an initial line
-line_0 = [(x/10, x/10) for x in range(10)]
-print(line_0)
-bias_graph.plot_line(line_0)
-graph_frame.pack(fill="both", expand="yes")
-
 
 # BINDINGS
 app.bind_all("<Return>", lambda x: calcular())
 app.mainloop()
+
 
 
