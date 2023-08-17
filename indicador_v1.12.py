@@ -196,7 +196,7 @@ def calcular():
 #------------------------------------------------------
 #acao botao info
 def about():
-    messagebox.showinfo("About", "Versão 1.11; tk/Python; Maurício Menon Obs: gráfico beta")
+    messagebox.showinfo("About", "Versão 1.12; tk/Python; Maurício Menon Obs: gráfico beta")
     return "break"
 #-----------------------------------------------------------------------
 #BUTTON about
