@@ -2,7 +2,7 @@ from cx_Freeze import setup, Executable
 
 base = None    
 
-executables = [Executable("indicador.py", base=base)]
+executables = [Executable("indicador_v1.9.py", base=base)]
 
 packages = ["idna","tkinter"]
 options = {
@@ -14,7 +14,8 @@ options = {
 setup(
     name = "BIAS/SCALE RAW COUNTS SCADA/UTR",
     options = options,
-    version = "1.12",
+    version = "19",
     description = 'Verificação de valores analógicos na UTR/SCADA; BIAS/SCALE; Raw Counts',
     executables = executables
 )
+
