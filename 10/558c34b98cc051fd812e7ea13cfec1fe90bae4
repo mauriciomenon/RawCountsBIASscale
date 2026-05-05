@@ -1,0 +1,23 @@
+indicador.py
+  96c3ae10579effa5 5-40,44-51,172-173,178-179,181,186-187,193,195-200,202,206,217-239,241,244,246
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "10558c34b98cc051fd812e7ea13cfec1fe90bae4",
+  "prompts": {
+    "96c3ae10579effa5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019df8cf-73fa-7481-b1b7-eec79ed067a0",
+        "model": "gpt-5.5"
+      },
+      "human_author": "unknown",
+      "messages": [],
+      "total_additions": 86,
+      "total_deletions": 43,
+      "accepted_lines": 218534,
+      "overriden_lines": 0
+    }
+  }
+}
