@@ -4,10 +4,9 @@ base = None
 
 executables = [Executable("indicador.py", base=base)]
 
-packages = ["idna","tkinter"]
 options = {
     'build_exe': {    
-        'packages':packages,
+        'packages':[],
     },    
 }
 

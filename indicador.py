@@ -1,5 +1,4 @@
 import tkinter as tk
-import tk_tools
 from tkinter import messagebox
 
 RAW_MAX = 2**15 - 1
@@ -8,6 +7,13 @@ DEFAULT_LIM_SUP = 20.0
 DEFAULT_RAN_INF = 0.0
 DEFAULT_RAN_SUP = 10.0
 DEFAULT_PONTEIRO = 5.0
+CANVAS_WIDTH = 240
+CANVAS_HEIGHT = 120
+CANVAS_LEFT = 52
+CANVAS_RIGHT = 14
+CANVAS_TOP = 8
+CANVAS_BOTTOM = 8
+LEGEND_LINES = 4
 
 
 def calcular_valores(lim_inf, lim_sup, ran_inf, ran_sup, ponteiro):
@@ -19,6 +25,10 @@ def calcular_valores(lim_inf, lim_sup, ran_inf, ran_sup, ponteiro):
         raise ValueError("Range de corrente nao pode ser zero")
     if lim_sup == 0:
         raise ValueError("Limite superior nao pode ser zero")
+    ran_min = min(ran_inf, ran_sup)
+    ran_max = max(ran_inf, ran_sup)
+    if not (ran_min <= ponteiro <= ran_max):
+        raise ValueError("Ponteiro fora do range fisico")
 
     corrente = ((ponteiro - ran_inf) * f_lim / f_ran) + lim_inf
     scale_calc = lim_sup * f_ran / f_lim
@@ -41,7 +51,7 @@ def limites_grafico(bias_val, scale_val):
 app = tk.Tk()
 app.title( "SCADA: Raw Counts & BIAS/SCALE")
 
-_, bias, scale, _, _ = calcular_valores(
+_, bias, scale, raw_int16, _ = calcular_valores(
     DEFAULT_LIM_INF,
     DEFAULT_LIM_SUP,
     DEFAULT_RAN_INF,
@@ -52,13 +62,12 @@ calculo_valido = True
 
 #app.geometry
 
-# DISCLAIMER:
-# NÃO É RECOMENDADO MISTURAR OS LAYOUT MANAGERS `pack` E `grid`
+# NOTE: avoid mixing pack and grid in same container
 
 # ----------------------------------------------------------------------
 # FRAME de valores em miliamperes
 amp_frame = tk.LabelFrame(app, text="Valores de Corrente do Transdutor (mA)", padx=10, pady=5)
-amp_frame.pack(fill="both", expand=True)
+amp_frame.pack(fill="x")
 
 # Limites amperimetro
 l_lim_inf = tk.Label(amp_frame, text="Limite inferior", anchor=tk.W)
@@ -79,8 +88,8 @@ e_lim_sup.grid(row=1, column=1, sticky=(tk.W, tk.E))
 
 # ----------------------------------------------------------------------
 # FRAME das escalas (grandeza)
-scale_frame = tk.LabelFrame(app, text="Escala de Grandeza do Equipamento Primário", padx=10, pady=5)
-scale_frame.pack(fill="both", expand=True)
+scale_frame = tk.LabelFrame(app, text="Escala de Grandeza do Equipamento Primario", padx=10, pady=5)
+scale_frame.pack(fill="x")
 
 # Limites Range Fisico
 l_ran_inf = tk.Label(scale_frame, text="Range inferior", anchor=tk.W)
@@ -111,7 +120,7 @@ e_ponteiro.grid(row=2, column=1, sticky=(tk.W, tk.E))
 # ----------------------------------------------------------------------
 # FRAME dos resultados SCADA
 return_frame = tk.LabelFrame(app, text="Resultado SCADA", padx=10, pady=5)
-return_frame.pack(fill="both", expand=True)
+return_frame.pack(fill="x")
 
 # Ponteiros BIAS e SCALE
 l_cal_bias_text = tk.Label(return_frame, text="BIAS", anchor=tk.W)
@@ -131,7 +140,7 @@ l_cal_scale_val.grid(row=2, column=1, sticky=(tk.W, tk.E))
 # FRAME dos resultados UTR
 
 return_frame_utr = tk.LabelFrame(app, text="Resultado UTR", padx=10, pady=5)
-return_frame_utr.pack(fill="both", expand=True)
+return_frame_utr.pack(fill="x")
 
 # Ponteiro do amperimetro
 
@@ -162,55 +171,114 @@ def acionar():
         plotar()
     return "break"
 # ----------------------------------------------------------------------
-# BUTTON calcular
-b_calcular = tk.Button(app, text="Calcular", height=2, width=10, command=acionar)
-b_calcular.pack()
+# FRAME do grafico
+graph_frame = tk.LabelFrame(app, text="Grafico BIAS/SCALE", padx=10, pady=5)
+graph_min, graph_max, _ = limites_grafico(bias, scale)
 
-# ----------------------------------------------------------------------
-# FRAME do gráfico
-graph_frame = tk.LabelFrame(app, text="Gráfico BIAS/SCALE", padx=10, pady=5)
-graph_min, graph_max, graph_tick = limites_grafico(bias, scale)
-graph_axis_state = (graph_min, graph_max, graph_tick)
-bias_graph = tk_tools.Graph(
-    parent=graph_frame,
-    x_min=0,
-    x_max=32768,
-    y_min=graph_min,
-    y_max=graph_max,
-    x_tick=8192,
-    y_tick=graph_tick,
-    width=300,
-    height=300
-)
-bias_graph.grid(row=0, column=0)
-line_0 = ((0,bias),(32767,bias + scale))
-bias_graph.plot_line(line_0,color='black',point_visibility=True)
-graph_frame.pack(fill="both", expand=True)
+
+def y_para_px(valor_y, y_min, y_max):
+    if y_max == y_min:
+        return CANVAS_HEIGHT / 2
+    return CANVAS_HEIGHT - CANVAS_BOTTOM - ((valor_y - y_min) / (y_max - y_min)) * (
+        CANVAS_HEIGHT - CANVAS_TOP - CANVAS_BOTTOM
+    )
+
+
+def desenhar_eixos(canvas, y_min, y_max):
+    canvas.create_line(CANVAS_LEFT, CANVAS_TOP, CANVAS_LEFT, CANVAS_HEIGHT - CANVAS_BOTTOM, fill="#444")
+    canvas.create_line(CANVAS_LEFT, CANVAS_HEIGHT - CANVAS_BOTTOM, CANVAS_WIDTH - CANVAS_RIGHT, CANVAS_HEIGHT - CANVAS_BOTTOM, fill="#444")
+    if y_max == y_min:
+        return
+    passo_y = (CANVAS_HEIGHT - CANVAS_TOP - CANVAS_BOTTOM) / 4
+    valor_passo = (y_max - y_min) / 4
+    for i in range(5):
+        y_px = CANVAS_TOP + i * passo_y
+        valor = y_max - i * valor_passo
+        canvas.create_line(CANVAS_LEFT, y_px, CANVAS_WIDTH - CANVAS_RIGHT, y_px, fill="#ddd")
+        canvas.create_text(CANVAS_LEFT - 4, y_px, text=f"{valor:.2f}", anchor="e", font=("Arial", 8))
+
+
+def desenhar_pontos_analise(canvas, bias_val, escala_val, y_min, y_max, ponto_raw):
+    canvas.delete("all")
+    desenhar_eixos(canvas, y_min, y_max)
+    # points on line y = bias + scale * raw / RAW_MAX
+    pontos = []
+
+    def ponto_de_raw(raw_val):
+        x_px = CANVAS_LEFT + (raw_val / RAW_MAX) * (CANVAS_WIDTH - CANVAS_LEFT - CANVAS_RIGHT)
+        y_px = y_para_px(
+            bias_val + (escala_val * raw_val / RAW_MAX),
+            y_min,
+            y_max,
+        )
+        y_val = bias_val + (escala_val * raw_val / RAW_MAX)
+        return raw_val, x_px, y_px, y_val
+
+    pontos.append(("x=0", *ponto_de_raw(0)))
+    pontos.append(("x=max", *ponto_de_raw(RAW_MAX)))
+
+    if escala_val != 0:
+        raw_zero = (-bias_val * RAW_MAX) / escala_val
+        if 0 <= raw_zero <= RAW_MAX:
+            pontos.append(("y=0", *ponto_de_raw(raw_zero)))
+        for valor_ref, tag in ((y_min, "y=min"), (y_max, "y=max")):
+            raw_ref = ((valor_ref - bias_val) * RAW_MAX) / escala_val
+            if 0 <= raw_ref <= RAW_MAX:
+                pontos.append((tag, *ponto_de_raw(raw_ref)))
+
+    if ponto_raw is not None:
+        pontos.append(("raw", *ponto_de_raw(ponto_raw)))
+
+    pontos_unicos = {}
+    for label, raw_val, x_px, y_px, y_val in pontos:
+        chave = round(raw_val)
+        if chave not in pontos_unicos:
+            pontos_unicos[chave] = (label, raw_val, x_px, y_px, y_val)
+
+    textos = []
+    for idx, (label, raw_val, x_px, y_px, y_val) in enumerate(pontos_unicos.values()):
+        raio = 4
+        cor = "#1f77b4" if idx < 2 else "#d62728"
+        canvas.create_oval(x_px - raio, y_px - raio, x_px + raio, y_px + raio, fill=cor, outline="")
+        if 0 <= raw_val <= RAW_MAX and y_min <= y_val <= y_max:
+            texto = f"{label}: x={int(round(raw_val)):5d} y={y_val:8.3f}"
+        else:
+            texto = f"{label}: x={raw_val:8.2f} y={y_val:8.3f}"
+        textos.append(texto)
+
+    return textos
+
+
+def atualizar_legenda_texto(listas_texto):
+    linhas = list(listas_texto)
+    if any(item.startswith("raw:") for item in linhas):
+        item_raw = next(item for item in linhas if item.startswith("raw:"))
+        outras = [item for item in linhas if not item.startswith("raw:")]
+        linhas = outras[:3] + [item_raw]
+    texto_linhas = "\n".join(linhas[:LEGEND_LINES])
+    legend_text.config(text=texto_linhas)
+
+
+bias_graph = tk.Canvas(graph_frame, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, highlightthickness=0)
+bias_graph.grid(row=0, column=0, sticky="w")
+legend_text = tk.Label(graph_frame, text="", justify="left", anchor="w", font=("Consolas", 8), height=4)
+legend_text.grid(row=1, column=0, sticky="w", padx=CANVAS_LEFT, pady=(0, 0))
+pontos_legenda = desenhar_pontos_analise(bias_graph, bias, scale, graph_min, graph_max, raw_int16)
+atualizar_legenda_texto(pontos_legenda)
+graph_frame.pack(fill="x", pady=3)
 
 #----------------------------------------------------------------------
 # FUNCTION plotar
 def plotar():
-    global graph_axis_state
-    #graph_frame = tk.LabelFrame(app, text="Gráfico", padx=10, pady=5)
-    graph_min, graph_max, graph_tick = limites_grafico(bias, scale)
-    if graph_axis_state != (graph_min, graph_max, graph_tick):
-        bias_graph.y_min = graph_min
-        bias_graph.y_max = graph_max
-        bias_graph.y_tick = graph_tick
-        graph_axis_state = (graph_min, graph_max, graph_tick)
-    graph_upper = bias + scale
-    bias_graph.draw_axes()
-    # create an initial line
-    line_0 = ((0,bias),(32767,graph_upper))
-    bias_graph.plot_line(line_0,color='black',point_visibility=True)
-    # atualiza o grafico sem recriar o widget
-    graph_frame.pack(fill="both", expand=True)
+    graph_min, graph_max, _ = limites_grafico(bias, scale)
+    pontos_legenda = desenhar_pontos_analise(bias_graph, bias, scale, graph_min, graph_max, raw_int16)
+    atualizar_legenda_texto(pontos_legenda)
     return "break"
 
 # ----------------------------------------------------------------------
 # FUNCTION calcular
 def calcular():
-    global bias, scale, calculo_valido
+    global bias, scale, raw_int16, calculo_valido
     calculo_valido = False
 
     try:
@@ -260,15 +328,21 @@ def calcular():
 #------------------------------------------------------
 #acao botao info
 def about():
-    messagebox.showinfo("About", "Versão 1.12; tk/Python; Maurício Menon Obs: gráfico beta")
+    messagebox.showinfo("About", "Versao de trabalho; tk/Python; Mauricio Menon")
     return "break"
 #-----------------------------------------------------------------------
 #BUTTON about
-b_about= tk.Button(app, text="About", command=about)
-b_about.place(x=0,y=0)
-b_about.pack()
+footer_frame = tk.Frame(app, height=34)
+footer_frame.pack(fill="x", pady=(4, 6))
+footer_frame.pack_propagate(False)
+
+b_calcular = tk.Button(footer_frame, text="Calcular", width=7, command=acionar, font=("Arial", 10))
+b_calcular.place(relx=0.5, rely=0.5, anchor="center")
+
+b_about = tk.Button(footer_frame, text="About", width=5, command=about, font=("Arial", 9))
+b_about.place(relx=0.98, rely=0.5, anchor="e")
 
 #------------------------------
 # BINDINGS
-app.bind_all("<Return>", lambda x: calcular())
+app.bind_all("<Return>", lambda x: acionar())
 app.mainloop()
