@@ -47,6 +47,7 @@ POINT_LABELS = {
 }
 FORM_LABEL_MIN_WIDTH = 145
 VALUE_COLUMN_WIDTH = 24
+FIELD_PAD_X = 12
 FRAME_PADY = (6, 0)
 
 
@@ -56,7 +57,7 @@ def configurar_colunas(frame):
 
 
 def criar_saida_valor(parent):
-    return tk.Label(parent, text="--", anchor=tk.W, width=VALUE_COLUMN_WIDTH, relief="groove", bd=1, padx=8)
+    return tk.Label(parent, text="--", anchor=tk.W, width=VALUE_COLUMN_WIDTH, relief="groove", bd=1, padx=FIELD_PAD_X)
 
 
 def criar_campo_entrada(parent, textvariable):
@@ -66,9 +67,11 @@ def criar_campo_entrada(parent, textvariable):
         textvariable=textvariable,
         width=VALUE_COLUMN_WIDTH,
         relief="flat",
-        bd=1,
+        bd=0,
+        highlightthickness=0,
     )
-    input_widget.pack(fill="x", padx=(8, 0))
+    input_frame.configure(background=input_widget.cget("background"))
+    input_widget.pack(fill="x", padx=(FIELD_PAD_X, 0))
     return input_frame
 
 
