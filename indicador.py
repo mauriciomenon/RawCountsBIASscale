@@ -40,7 +40,7 @@ POINT_LABELS = {
     "medido": "(x,y) med",
 }
 FORM_LABEL_MIN_WIDTH = 145
-VALUE_COLUMN_WIDTH = 27
+VALUE_COLUMN_WIDTH = 24
 FRAME_PADY = (6, 0)
 
 
