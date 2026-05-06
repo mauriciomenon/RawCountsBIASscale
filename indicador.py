@@ -39,8 +39,8 @@ POINT_LABELS = {
     "y=max": "(x,y) ymax",
     "medido": "(x,y) med",
 }
-FORM_LABEL_MIN_WIDTH = 190
-VALUE_COLUMN_WIDTH = 24
+FORM_LABEL_MIN_WIDTH = 145
+VALUE_COLUMN_WIDTH = 18
 FRAME_PADY = (6, 0)
 
 
@@ -51,6 +51,19 @@ def configurar_colunas(frame):
 
 def criar_saida_valor(parent):
     return tk.Label(parent, text="--", anchor=tk.W, width=VALUE_COLUMN_WIDTH, relief="groove", bd=1, padx=4)
+
+
+def criar_entrada(parent, textvariable):
+    return tk.Entry(
+        parent,
+        textvariable=textvariable,
+        width=VALUE_COLUMN_WIDTH,
+        relief="solid",
+        bd=1,
+        highlightbackground="white",
+        highlightcolor="white",
+        highlightthickness=1,
+    )
 
 
 def calcular_valores(lim_inf, lim_sup, ran_inf, ran_sup, ponteiro):
@@ -89,7 +102,7 @@ app = tk.Tk()
 app.title( "SCADA: Raw Counts & BIAS/SCALE")
 
 content_frame = tk.Frame(app, padx=8, pady=8, highlightbackground="white", highlightthickness=1)
-content_frame.pack(fill="x", padx=6, pady=(8, 6))
+content_frame.pack(padx=8, pady=(8, 6))
 
 _, bias, scale, raw_int16, _ = calcular_valores(
     DEFAULT_LIM_INF,
@@ -119,8 +132,8 @@ ptr_e_lim_inf.set("4")
 ptr_e_lim_sup = tk.StringVar()
 ptr_e_lim_sup.set("20")
 
-e_lim_inf = tk.Entry(amp_frame, textvariable=ptr_e_lim_inf, width=VALUE_COLUMN_WIDTH)
-e_lim_sup = tk.Entry(amp_frame, textvariable=ptr_e_lim_sup, width=VALUE_COLUMN_WIDTH)
+e_lim_inf = criar_entrada(amp_frame, ptr_e_lim_inf)
+e_lim_sup = criar_entrada(amp_frame, ptr_e_lim_sup)
 
 l_lim_inf.grid(row=0, column=0, sticky=(tk.W, tk.E))
 l_lim_sup.grid(row=1, column=0, sticky=(tk.W, tk.E))
@@ -142,8 +155,8 @@ ptr_e_ran_inf.set("0")
 ptr_e_ran_sup = tk.StringVar()
 ptr_e_ran_sup.set("10")
 
-e_ran_inf = tk.Entry(scale_frame, textvariable=ptr_e_ran_inf, width=VALUE_COLUMN_WIDTH)
-e_ran_sup = tk.Entry(scale_frame, textvariable=ptr_e_ran_sup, width=VALUE_COLUMN_WIDTH)
+e_ran_inf = criar_entrada(scale_frame, ptr_e_ran_inf)
+e_ran_sup = criar_entrada(scale_frame, ptr_e_ran_sup)
 
 l_ran_inf.grid(row=0, column=0, sticky=(tk.W, tk.E))
 l_ran_sup.grid(row=1, column=0, sticky=(tk.W, tk.E))
@@ -154,7 +167,7 @@ e_ran_sup.grid(row=1, column=1, sticky=tk.W)
 l_ponteiro = tk.Label(scale_frame, text="Valor medido", anchor=tk.W)
 ptr_e_ponteiro = tk.StringVar()
 ptr_e_ponteiro.set("5")
-e_ponteiro = tk.Entry(scale_frame, textvariable=ptr_e_ponteiro, width=VALUE_COLUMN_WIDTH)
+e_ponteiro = criar_entrada(scale_frame, ptr_e_ponteiro)
 
 l_ponteiro.grid(row=2, column=0, sticky=(tk.W, tk.E))
 e_ponteiro.grid(row=2, column=1, sticky=tk.W)
@@ -385,7 +398,13 @@ def calcular():
 #------------------------------------------------------
 #acao botao info
 def about():
-    messagebox.showinfo("About", "Versao de trabalho; tk/Python; Mauricio Menon")
+    messagebox.showinfo(
+        "About",
+        "SCADA Analog Scaling Calculator\n\n"
+        "Calculator for adapting analog values in SCADA and IEC 60870 workflows.\n"
+        "Designed for BIAS/SCALE, raw counts, and RTU analog point validation.\n\n"
+        "Examples: ABB/Hitachi NMR3 and NMR5 SCADA with Harris/GE RTU infrastructure.",
+    )
     return "break"
 #-----------------------------------------------------------------------
 #BUTTON about
