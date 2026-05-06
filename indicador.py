@@ -40,7 +40,7 @@ POINT_LABELS = {
     "medido": "(x,y) med",
 }
 FORM_LABEL_MIN_WIDTH = 145
-VALUE_COLUMN_WIDTH = 18
+VALUE_COLUMN_WIDTH = 27
 FRAME_PADY = (6, 0)
 
 
@@ -398,13 +398,7 @@ def calcular():
 #------------------------------------------------------
 #acao botao info
 def about():
-    messagebox.showinfo(
-        "About",
-        "SCADA Analog Scaling Calculator\n\n"
-        "Calculator for adapting analog values in SCADA and IEC 60870 workflows.\n"
-        "Designed for BIAS/SCALE, raw counts, and RTU analog point validation.\n\n"
-        "Examples: ABB/Hitachi NMR3 and NMR5 SCADA with Harris/GE RTU infrastructure.",
-    )
+    messagebox.showinfo("About", "Versao de trabalho; tk/Python; Mauricio Menon")
     return "break"
 #-----------------------------------------------------------------------
 #BUTTON about
