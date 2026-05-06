@@ -56,20 +56,20 @@ def configurar_colunas(frame):
 
 
 def criar_saida_valor(parent):
-    return tk.Label(parent, text="--", anchor=tk.W, width=VALUE_COLUMN_WIDTH, relief="groove", bd=1, padx=4)
+    return tk.Label(parent, text="--", anchor=tk.W, width=VALUE_COLUMN_WIDTH, relief="groove", bd=1, padx=8)
 
 
-def criar_entrada(parent, textvariable):
-    return tk.Entry(
-        parent,
+def criar_campo_entrada(parent, textvariable):
+    input_frame = tk.Frame(parent, relief="solid", bd=1, highlightbackground="white", highlightthickness=1)
+    input_widget = tk.Entry(
+        input_frame,
         textvariable=textvariable,
         width=VALUE_COLUMN_WIDTH,
-        relief="solid",
+        relief="flat",
         bd=1,
-        highlightbackground="white",
-        highlightcolor="white",
-        highlightthickness=1,
     )
+    input_widget.pack(fill="x", padx=(8, 0))
+    return input_frame
 
 
 def commit_atual():
@@ -149,8 +149,8 @@ ptr_e_lim_inf.set("4")
 ptr_e_lim_sup = tk.StringVar()
 ptr_e_lim_sup.set("20")
 
-e_lim_inf = criar_entrada(amp_frame, ptr_e_lim_inf)
-e_lim_sup = criar_entrada(amp_frame, ptr_e_lim_sup)
+e_lim_inf = criar_campo_entrada(amp_frame, ptr_e_lim_inf)
+e_lim_sup = criar_campo_entrada(amp_frame, ptr_e_lim_sup)
 
 l_lim_inf.grid(row=0, column=0, sticky=(tk.W, tk.E))
 l_lim_sup.grid(row=1, column=0, sticky=(tk.W, tk.E))
@@ -172,8 +172,8 @@ ptr_e_ran_inf.set("0")
 ptr_e_ran_sup = tk.StringVar()
 ptr_e_ran_sup.set("10")
 
-e_ran_inf = criar_entrada(scale_frame, ptr_e_ran_inf)
-e_ran_sup = criar_entrada(scale_frame, ptr_e_ran_sup)
+e_ran_inf = criar_campo_entrada(scale_frame, ptr_e_ran_inf)
+e_ran_sup = criar_campo_entrada(scale_frame, ptr_e_ran_sup)
 
 l_ran_inf.grid(row=0, column=0, sticky=(tk.W, tk.E))
 l_ran_sup.grid(row=1, column=0, sticky=(tk.W, tk.E))
@@ -184,7 +184,7 @@ e_ran_sup.grid(row=1, column=1, sticky=tk.W)
 l_ponteiro = tk.Label(scale_frame, text="Valor medido", anchor=tk.W)
 ptr_e_ponteiro = tk.StringVar()
 ptr_e_ponteiro.set("5")
-e_ponteiro = criar_entrada(scale_frame, ptr_e_ponteiro)
+e_ponteiro = criar_campo_entrada(scale_frame, ptr_e_ponteiro)
 
 l_ponteiro.grid(row=2, column=0, sticky=(tk.W, tk.E))
 e_ponteiro.grid(row=2, column=1, sticky=tk.W)
