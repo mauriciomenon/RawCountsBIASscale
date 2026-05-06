@@ -1,7 +1,13 @@
+import datetime
+import subprocess
 import tkinter as tk
 from tkinter import messagebox
 
 RAW_MAX = 2**15 - 1
+APP_VERSION = "1.0"
+APP_AUTHOR = "Mauricio Menon"
+APP_GITHUB = "https://github.com/mauriciomenon/RawCountsBIASscale"
+APP_DESCRIPTION = "Analog point calculator between SCADA systems and RTUs"
 DEFAULT_LIM_INF = 4.0
 DEFAULT_LIM_SUP = 20.0
 DEFAULT_RAN_INF = 0.0
@@ -10,7 +16,7 @@ DEFAULT_PONTEIRO = 5.0
 CANVAS_WIDTH = 360
 CANVAS_HEIGHT = 120
 CANVAS_LEFT = 60
-CANVAS_RIGHT = 14
+CANVAS_RIGHT = 8
 CANVAS_TOP = 8
 CANVAS_BOTTOM = 8
 LEGEND_LINES = 4
@@ -64,6 +70,17 @@ def criar_entrada(parent, textvariable):
         highlightcolor="white",
         highlightthickness=1,
     )
+
+
+def commit_atual():
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
 
 
 def calcular_valores(lim_inf, lim_sup, ran_inf, ran_sup, ponteiro):
@@ -398,7 +415,27 @@ def calcular():
 #------------------------------------------------------
 #acao botao info
 def about():
-    messagebox.showinfo("About", "Versao de trabalho; tk/Python; Mauricio Menon")
+    janela_about = tk.Toplevel(app)
+    janela_about.title("About")
+    janela_about.resizable(False, False)
+    janela_about.transient(app)
+    janela_about.grab_set()
+
+    frame_about = tk.Frame(janela_about, padx=16, pady=14)
+    frame_about.pack(fill="both", expand=True)
+
+    tk.Label(frame_about, text=APP_DESCRIPTION, anchor=tk.W, justify="left").pack(fill="x")
+    tk.Label(frame_about, text=f"Author: {APP_AUTHOR}", anchor=tk.W).pack(fill="x", pady=(10, 0))
+    tk.Label(frame_about, text=f"Version: {APP_VERSION}", anchor=tk.W).pack(fill="x")
+    tk.Label(frame_about, text=f"Commit: {commit_atual()}", anchor=tk.W).pack(fill="x")
+    tk.Label(frame_about, text=f"Date: {datetime.date.today().isoformat()}", anchor=tk.W).pack(fill="x")
+    tk.Label(frame_about, text=f"GitHub: {APP_GITHUB}", anchor=tk.W).pack(fill="x", pady=(0, 10))
+    tk.Button(frame_about, text="OK", width=8, command=janela_about.destroy).pack(anchor="center")
+
+    janela_about.update_idletasks()
+    x_pos = app.winfo_rootx() + (app.winfo_width() - janela_about.winfo_width()) // 2
+    y_pos = app.winfo_rooty() + (app.winfo_height() - janela_about.winfo_height()) // 2
+    janela_about.geometry(f"+{x_pos}+{y_pos}")
     return "break"
 #-----------------------------------------------------------------------
 #BUTTON about
