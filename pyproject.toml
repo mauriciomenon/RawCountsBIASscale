@@ -1,15 +1,17 @@
 [project]
 name = "RawCountsBIASscale"
-version = "1.12"
+version = "1.1"
 requires-python = ">=3.10"
 description = "Raw counts calculator for SCADA BIAS/SCALE"
 dependencies = []
 
 [project.optional-dependencies]
 build = [
-    "cx_Freeze",
+    "Nuitka>=2.6",
+    "ordered-set",
+    "zstandard",
 ]
 
 [build-system]
-requires = ["setuptools>=61.0", "cx-Freeze"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"

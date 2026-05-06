@@ -1,19 +1,9 @@
-from cx_Freeze import setup, Executable
+from setuptools import setup
 
-base = None    
-
-executables = [Executable("indicador.py", base=base)]
-
-options = {
-    'build_exe': {    
-        'packages':[],
-    },    
-}
 
 setup(
-    name = "BIAS/SCALE RAW COUNTS SCADA/UTR",
-    options = options,
-    version = "1.12",
-    description = 'Verificação de valores analógicos na UTR/SCADA; BIAS/SCALE; Raw Counts',
-    executables = executables
+    name="RawCountsBIASscale",
+    version="1.1",
+    description="SCADA and RTU analog value calculator for BIAS, SCALE, and raw counts",
+    py_modules=["indicador"],
 )

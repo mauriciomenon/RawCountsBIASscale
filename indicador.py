@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 RAW_MAX = 2**15 - 1
-APP_VERSION = "1.0"
+APP_VERSION = "1.1"
 APP_AUTHOR = "Mauricio Menon"
 APP_GITHUB = "https://github.com/mauriciomenon/RawCountsBIASscale"
 APP_DESCRIPTION = "Analog point calculator between SCADA systems and RTUs"
@@ -48,6 +48,7 @@ POINT_LABELS = {
 FORM_LABEL_MIN_WIDTH = 145
 VALUE_COLUMN_WIDTH = 24
 FIELD_PAD_X = 12
+INPUT_INNER_BD = 0
 FRAME_PADY = (6, 0)
 
 
@@ -57,7 +58,17 @@ def configurar_colunas(frame):
 
 
 def criar_saida_valor(parent):
-    return tk.Label(parent, text="--", anchor=tk.W, width=VALUE_COLUMN_WIDTH, relief="groove", bd=1, padx=FIELD_PAD_X)
+    return tk.Label(
+        parent,
+        text="--",
+        anchor=tk.W,
+        width=VALUE_COLUMN_WIDTH,
+        relief="solid",
+        bd=1,
+        padx=FIELD_PAD_X,
+        highlightbackground="white",
+        highlightthickness=1,
+    )
 
 
 def criar_campo_entrada(parent, textvariable):
@@ -67,11 +78,11 @@ def criar_campo_entrada(parent, textvariable):
         textvariable=textvariable,
         width=VALUE_COLUMN_WIDTH,
         relief="flat",
-        bd=0,
+        bd=INPUT_INNER_BD,
         highlightthickness=0,
     )
     input_frame.configure(background=input_widget.cget("background"))
-    input_widget.pack(fill="x", padx=(FIELD_PAD_X, 0))
+    input_widget.pack(fill="x", padx=FIELD_PAD_X)
     return input_frame
 
 
@@ -116,141 +127,6 @@ def limites_grafico(bias_val, scale_val):
         raise ValueError("Escala do grafico nao pode ser zero")
     graph_tick = abs(graph_max - graph_min) / 4 or 1
     return graph_min, graph_max, graph_tick
-
-
-app = tk.Tk()
-app.title( "SCADA: Raw Counts & BIAS/SCALE")
-
-content_frame = tk.Frame(app, padx=8, pady=8, highlightbackground="white", highlightthickness=1)
-content_frame.pack(padx=8, pady=(8, 6))
-
-_, bias, scale, raw_int16, _ = calcular_valores(
-    DEFAULT_LIM_INF,
-    DEFAULT_LIM_SUP,
-    DEFAULT_RAN_INF,
-    DEFAULT_RAN_SUP,
-    DEFAULT_PONTEIRO,
-)
-calculo_valido = True
-
-#app.geometry
-
-# NOTE: avoid mixing pack and grid in same container
-
-# ----------------------------------------------------------------------
-# FRAME de valores em miliamperes
-amp_frame = tk.LabelFrame(content_frame, text="Valores de Corrente do Transdutor (mA)", padx=10, pady=5)
-amp_frame.pack(fill="x", pady=FRAME_PADY)
-configurar_colunas(amp_frame)
-
-# Limites amperimetro
-l_lim_inf = tk.Label(amp_frame, text="Limite inferior", anchor=tk.W)
-l_lim_sup = tk.Label(amp_frame, text="Limite superior", anchor=tk.W)
-
-ptr_e_lim_inf = tk.StringVar()
-ptr_e_lim_inf.set("4")
-ptr_e_lim_sup = tk.StringVar()
-ptr_e_lim_sup.set("20")
-
-e_lim_inf = criar_campo_entrada(amp_frame, ptr_e_lim_inf)
-e_lim_sup = criar_campo_entrada(amp_frame, ptr_e_lim_sup)
-
-l_lim_inf.grid(row=0, column=0, sticky=(tk.W, tk.E))
-l_lim_sup.grid(row=1, column=0, sticky=(tk.W, tk.E))
-e_lim_inf.grid(row=0, column=1, sticky=tk.W)
-e_lim_sup.grid(row=1, column=1, sticky=tk.W)
-
-# ----------------------------------------------------------------------
-# FRAME das escalas (grandeza)
-scale_frame = tk.LabelFrame(content_frame, text="Escala de Grandeza do Equipamento Primario", padx=10, pady=5)
-scale_frame.pack(fill="x", pady=FRAME_PADY)
-configurar_colunas(scale_frame)
-
-# Limites Range Fisico
-l_ran_inf = tk.Label(scale_frame, text="Range inferior", anchor=tk.W)
-l_ran_sup = tk.Label(scale_frame, text="Range superior", anchor=tk.W)
-
-ptr_e_ran_inf = tk.StringVar()
-ptr_e_ran_inf.set("0")
-ptr_e_ran_sup = tk.StringVar()
-ptr_e_ran_sup.set("10")
-
-e_ran_inf = criar_campo_entrada(scale_frame, ptr_e_ran_inf)
-e_ran_sup = criar_campo_entrada(scale_frame, ptr_e_ran_sup)
-
-l_ran_inf.grid(row=0, column=0, sticky=(tk.W, tk.E))
-l_ran_sup.grid(row=1, column=0, sticky=(tk.W, tk.E))
-e_ran_inf.grid(row=0, column=1, sticky=tk.W)
-e_ran_sup.grid(row=1, column=1, sticky=tk.W)
-
-# Ponteiro
-l_ponteiro = tk.Label(scale_frame, text="Valor medido", anchor=tk.W)
-ptr_e_ponteiro = tk.StringVar()
-ptr_e_ponteiro.set("5")
-e_ponteiro = criar_campo_entrada(scale_frame, ptr_e_ponteiro)
-
-l_ponteiro.grid(row=2, column=0, sticky=(tk.W, tk.E))
-e_ponteiro.grid(row=2, column=1, sticky=tk.W)
-
-# ----------------------------------------------------------------------
-# FRAME dos resultados SCADA
-return_frame = tk.LabelFrame(content_frame, text="Resultado SCADA", padx=10, pady=5)
-return_frame.pack(fill="x", pady=FRAME_PADY)
-configurar_colunas(return_frame)
-
-# Ponteiros BIAS e SCALE
-l_cal_bias_text = tk.Label(return_frame, text="BIAS", anchor=tk.W)
-l_cal_bias_val = criar_saida_valor(return_frame)
-l_cal_bias_text.grid(row=1, column=0, sticky=(tk.W, tk.E))
-l_cal_bias_val.grid(row=1, column=1, sticky=tk.W)
-
-l_cal_scale_text = tk.Label(return_frame, text="SCALE", anchor=tk.W)
-l_cal_scale_val = criar_saida_valor(return_frame)
-l_cal_scale_text.grid(row=2, column=0, sticky=(tk.W, tk.E))
-l_cal_scale_val.grid(row=2, column=1, sticky=tk.W)
-
-#l_cal_bias_val["text"] = "--"
-#l_cal_scale_val["text"]= "--"
-
-# ----------------------------------------------------------------------
-# FRAME dos resultados UTR
-
-return_frame_utr = tk.LabelFrame(content_frame, text="Resultado UTR", padx=10, pady=5)
-return_frame_utr.pack(fill="x", pady=FRAME_PADY)
-configurar_colunas(return_frame_utr)
-
-# Ponteiro do amperimetro
-
-l_cal_text = tk.Label(return_frame_utr, text="Valor (mA)", anchor=tk.W)
-l_cal_val = criar_saida_valor(return_frame_utr)
-l_cal_text.grid(row=0, column=0, sticky=(tk.W, tk.E))
-l_cal_val.grid(row=0, column=1, sticky=tk.W)
-
-# Ponteiro do raw_couts INT 
-
-l_cal_text_int = tk.Label(return_frame_utr, text="INT (16 bits)", anchor=tk.W)
-l_cal_val_int = criar_saida_valor(return_frame_utr)
-l_cal_text_int.grid(row=1, column=0, sticky=(tk.W, tk.E))
-l_cal_val_int.grid(row=1, column=1, sticky=tk.W)
-
-# Ponteiro do raw_couts HEXA 
-
-l_cal_text_hex = tk.Label(return_frame_utr, text="HEXA (16 bits)", anchor=tk.W)
-l_cal_val_hex = criar_saida_valor(return_frame_utr)
-l_cal_text_hex.grid(row=2, column=0, sticky=(tk.W, tk.E))
-l_cal_val_hex.grid(row=2, column=1, sticky=tk.W)
-
-#-----------------------------------------------------------------------
-#FUNCTION acionar botao (parametros multiplos)
-def acionar():
-    calcular()
-    if calculo_valido:
-        plotar()
-    return "break"
-# ----------------------------------------------------------------------
-# FRAME do grafico
-graph_frame = tk.LabelFrame(content_frame, text="Grafico BIAS/SCALE", padx=10, pady=5)
-graph_min, graph_max, _ = limites_grafico(bias, scale)
 
 
 def y_para_px(valor_y, y_min, y_max):
@@ -321,9 +197,9 @@ def desenhar_pontos_analise(canvas, pontos_analise, y_min, y_max):
         canvas.create_oval(x_px - raio, y_px - raio, x_px + raio, y_px + raio, fill=cor, outline="")
 
 
-def atualizar_legenda(pontos_analise, y_min, y_max):
-    legend_canvas.delete("all")
-    legend_canvas.create_line(0, 1, LEGEND_WIDTH, 1, fill="#8a8a8a")
+def atualizar_legenda(canvas, pontos_analise, y_min, y_max):
+    canvas.delete("all")
+    canvas.create_line(0, 1, LEGEND_WIDTH, 1, fill="#8a8a8a")
     linhas = list(pontos_analise)
     if any(label == "medido" for label, _, _ in linhas):
         item_raw = next(item for item in linhas if item[0] == "medido")
@@ -338,121 +214,228 @@ def atualizar_legenda(pontos_analise, y_min, y_max):
         label_texto = POINT_LABELS.get(label, label)
         valor_texto = f"{y_val:.3f}"
         y_px = 14 + idx * 14
-        legend_canvas.create_text(LEGEND_LABEL_X, y_px, text=label_texto, anchor="w", font=("Consolas", 7))
-        legend_canvas.create_oval(LEGEND_DOT_X - 4, y_px - 4, LEGEND_DOT_X + 4, y_px + 4, fill=cor, outline="")
-        legend_canvas.create_text(LEGEND_RAW_LABEL_X, y_px, text="raw=", anchor="w", font=("Consolas", 7))
-        legend_canvas.create_text(LEGEND_RAW_VALUE_X, y_px, text=raw_texto, anchor="e", font=("Consolas", 7))
-        legend_canvas.create_text(LEGEND_SEPARATOR_X, y_px, text="|", anchor="center", font=("Consolas", 7))
-        legend_canvas.create_text(LEGEND_VALUE_LABEL_X, y_px, text="valor=", anchor="w", font=("Consolas", 7))
-        legend_canvas.create_text(LEGEND_VALUE_X, y_px, text=valor_texto, anchor="w", font=("Consolas", 7))
+        canvas.create_text(LEGEND_LABEL_X, y_px, text=label_texto, anchor="w", font=("Consolas", 7))
+        canvas.create_oval(LEGEND_DOT_X - 4, y_px - 4, LEGEND_DOT_X + 4, y_px + 4, fill=cor, outline="")
+        canvas.create_text(LEGEND_RAW_LABEL_X, y_px, text="raw=", anchor="w", font=("Consolas", 7))
+        canvas.create_text(LEGEND_RAW_VALUE_X, y_px, text=raw_texto, anchor="e", font=("Consolas", 7))
+        canvas.create_text(LEGEND_SEPARATOR_X, y_px, text="|", anchor="center", font=("Consolas", 7))
+        canvas.create_text(LEGEND_VALUE_LABEL_X, y_px, text="valor=", anchor="w", font=("Consolas", 7))
+        canvas.create_text(LEGEND_VALUE_X, y_px, text=valor_texto, anchor="w", font=("Consolas", 7))
 
 
-bias_graph = tk.Canvas(graph_frame, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, highlightthickness=0)
-bias_graph.grid(row=0, column=0, sticky="w")
-legend_canvas = tk.Canvas(graph_frame, width=LEGEND_WIDTH, height=LEGEND_HEIGHT, highlightthickness=0)
-legend_canvas.grid(row=1, column=0, sticky="w", padx=CANVAS_LEFT, pady=(0, 0))
-pontos_analise = coletar_pontos_analise(bias, scale, graph_min, graph_max, raw_int16)
-desenhar_pontos_analise(bias_graph, pontos_analise, graph_min, graph_max)
-atualizar_legenda(pontos_analise, graph_min, graph_max)
-graph_frame.pack(fill="x", pady=FRAME_PADY)
+class IndicadorApp:
+    def __init__(self):
+        self.app = tk.Tk()
+        self.app.title("SCADA: Raw Counts & BIAS/SCALE")
+        self.content_frame = tk.Frame(self.app, padx=8, pady=8, highlightbackground="white", highlightthickness=1)
+        self.content_frame.pack(padx=8, pady=(8, 6))
 
-#----------------------------------------------------------------------
-# FUNCTION plotar
-def plotar():
-    graph_min, graph_max, _ = limites_grafico(bias, scale)
-    pontos_analise = coletar_pontos_analise(bias, scale, graph_min, graph_max, raw_int16)
-    desenhar_pontos_analise(bias_graph, pontos_analise, graph_min, graph_max)
-    atualizar_legenda(pontos_analise, graph_min, graph_max)
-    return "break"
-
-# ----------------------------------------------------------------------
-# FUNCTION calcular
-def calcular():
-    global bias, scale, raw_int16, calculo_valido
-    calculo_valido = False
-
-    try:
-        lim_inf = float(ptr_e_lim_inf.get())
-        lim_sup = float(ptr_e_lim_sup.get())
-        ran_inf = float(ptr_e_ran_inf.get())
-        ran_sup = float(ptr_e_ran_sup.get())
-        ponteiro = float(ptr_e_ponteiro.get())
-    except ValueError:
-        l_cal_val["text"] = "--"
-        l_cal_bias_val["text"] = "--"
-        l_cal_scale_val["text"]= "--"
-        l_cal_val_int["text"]= "--"
-        l_cal_val_hex["text"]= "--"
-        messagebox.showerror("Erro", "Informe apenas valores numericos")
-        return "break"
-
-    try:
-        corrente, bias, scale, raw_int16, raw_hexa16 = calcular_valores(
-            lim_inf,
-            lim_sup,
-            ran_inf,
-            ran_sup,
-            ponteiro,
+        _, self.bias_inicial, self.scale_inicial, self.raw_inicial, _ = calcular_valores(
+            DEFAULT_LIM_INF,
+            DEFAULT_LIM_SUP,
+            DEFAULT_RAN_INF,
+            DEFAULT_RAN_SUP,
+            DEFAULT_PONTEIRO,
         )
-    except ValueError as exc:
-        raw_hexa16 = "--"
-        l_cal_val["text"] = "--"
-        l_cal_bias_val["text"] = "--"
-        l_cal_scale_val["text"]= "--"
-        l_cal_val_int["text"]= "--"
-        l_cal_val_hex["text"]= str(raw_hexa16)
-        messagebox.showerror("Erro", str(exc))
+
+        self.criar_campos_entrada()
+        self.criar_resultados()
+        self.criar_grafico()
+        self.criar_rodape()
+        self.app.bind_all("<Return>", lambda _event: self.acionar())
+
+    def criar_campos_entrada(self):
+        amp_frame = tk.LabelFrame(
+            self.content_frame,
+            text="Valores de Corrente do Transdutor (mA)",
+            padx=10,
+            pady=5,
+        )
+        amp_frame.pack(fill="x", pady=FRAME_PADY)
+        configurar_colunas(amp_frame)
+
+        self.ptr_e_lim_inf = tk.StringVar(value="4")
+        self.ptr_e_lim_sup = tk.StringVar(value="20")
+
+        tk.Label(amp_frame, text="Limite inferior", anchor=tk.W).grid(row=0, column=0, sticky=(tk.W, tk.E))
+        tk.Label(amp_frame, text="Limite superior", anchor=tk.W).grid(row=1, column=0, sticky=(tk.W, tk.E))
+        criar_campo_entrada(amp_frame, self.ptr_e_lim_inf).grid(row=0, column=1, sticky=tk.W)
+        criar_campo_entrada(amp_frame, self.ptr_e_lim_sup).grid(row=1, column=1, sticky=tk.W)
+
+        scale_frame = tk.LabelFrame(
+            self.content_frame,
+            text="Escala de Grandeza do Equipamento Primario",
+            padx=10,
+            pady=5,
+        )
+        scale_frame.pack(fill="x", pady=FRAME_PADY)
+        configurar_colunas(scale_frame)
+
+        self.ptr_e_ran_inf = tk.StringVar(value="0")
+        self.ptr_e_ran_sup = tk.StringVar(value="10")
+        self.ptr_e_ponteiro = tk.StringVar(value="5")
+
+        tk.Label(scale_frame, text="Range inferior", anchor=tk.W).grid(row=0, column=0, sticky=(tk.W, tk.E))
+        tk.Label(scale_frame, text="Range superior", anchor=tk.W).grid(row=1, column=0, sticky=(tk.W, tk.E))
+        tk.Label(scale_frame, text="Valor medido", anchor=tk.W).grid(row=2, column=0, sticky=(tk.W, tk.E))
+        criar_campo_entrada(scale_frame, self.ptr_e_ran_inf).grid(row=0, column=1, sticky=tk.W)
+        criar_campo_entrada(scale_frame, self.ptr_e_ran_sup).grid(row=1, column=1, sticky=tk.W)
+        criar_campo_entrada(scale_frame, self.ptr_e_ponteiro).grid(row=2, column=1, sticky=tk.W)
+
+    def criar_resultados(self):
+        return_frame = tk.LabelFrame(self.content_frame, text="Resultado SCADA", padx=10, pady=5)
+        return_frame.pack(fill="x", pady=FRAME_PADY)
+        configurar_colunas(return_frame)
+
+        self.l_cal_bias_val = criar_saida_valor(return_frame)
+        self.l_cal_scale_val = criar_saida_valor(return_frame)
+        tk.Label(return_frame, text="BIAS", anchor=tk.W).grid(row=1, column=0, sticky=(tk.W, tk.E))
+        self.l_cal_bias_val.grid(row=1, column=1, sticky=tk.W)
+        tk.Label(return_frame, text="SCALE", anchor=tk.W).grid(row=2, column=0, sticky=(tk.W, tk.E))
+        self.l_cal_scale_val.grid(row=2, column=1, sticky=tk.W)
+
+        return_frame_utr = tk.LabelFrame(self.content_frame, text="Resultado UTR", padx=10, pady=5)
+        return_frame_utr.pack(fill="x", pady=FRAME_PADY)
+        configurar_colunas(return_frame_utr)
+
+        self.l_cal_val = criar_saida_valor(return_frame_utr)
+        self.l_cal_val_int = criar_saida_valor(return_frame_utr)
+        self.l_cal_val_hex = criar_saida_valor(return_frame_utr)
+        tk.Label(return_frame_utr, text="Valor (mA)", anchor=tk.W).grid(row=0, column=0, sticky=(tk.W, tk.E))
+        self.l_cal_val.grid(row=0, column=1, sticky=tk.W)
+        tk.Label(return_frame_utr, text="INT (16 bits)", anchor=tk.W).grid(row=1, column=0, sticky=(tk.W, tk.E))
+        self.l_cal_val_int.grid(row=1, column=1, sticky=tk.W)
+        tk.Label(return_frame_utr, text="HEXA (16 bits)", anchor=tk.W).grid(row=2, column=0, sticky=(tk.W, tk.E))
+        self.l_cal_val_hex.grid(row=2, column=1, sticky=tk.W)
+
+    def criar_grafico(self):
+        graph_frame = tk.LabelFrame(self.content_frame, text="Grafico BIAS/SCALE", padx=10, pady=5)
+        graph_min, graph_max, _ = limites_grafico(self.bias_inicial, self.scale_inicial)
+
+        self.bias_graph = tk.Canvas(graph_frame, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, highlightthickness=0)
+        self.bias_graph.grid(row=0, column=0, sticky="w")
+        self.legend_canvas = tk.Canvas(graph_frame, width=LEGEND_WIDTH, height=LEGEND_HEIGHT, highlightthickness=0)
+        self.legend_canvas.grid(row=1, column=0, sticky="w", padx=CANVAS_LEFT, pady=(0, 0))
+
+        pontos_analise = coletar_pontos_analise(
+            self.bias_inicial,
+            self.scale_inicial,
+            graph_min,
+            graph_max,
+            self.raw_inicial,
+        )
+        desenhar_pontos_analise(self.bias_graph, pontos_analise, graph_min, graph_max)
+        atualizar_legenda(self.legend_canvas, pontos_analise, graph_min, graph_max)
+        graph_frame.pack(fill="x", pady=FRAME_PADY)
+
+    def criar_rodape(self):
+        footer_frame = tk.Frame(self.content_frame, height=34)
+        footer_frame.pack(fill="x", pady=(8, 2))
+        footer_frame.pack_propagate(False)
+
+        tk.Button(footer_frame, text="Calcular", width=7, command=self.acionar, font=("Arial", 10)).place(
+            relx=0.5,
+            rely=0.5,
+            anchor="center",
+        )
+        tk.Button(
+            footer_frame,
+            text="About",
+            width=4,
+            command=self.about,
+            font=("Arial", 7),
+            padx=1,
+            pady=1,
+            anchor="center",
+        ).place(relx=0.98, rely=0.5, anchor="e")
+
+    def ler_valores_entrada(self):
+        return (
+            float(self.ptr_e_lim_inf.get()),
+            float(self.ptr_e_lim_sup.get()),
+            float(self.ptr_e_ran_inf.get()),
+            float(self.ptr_e_ran_sup.get()),
+            float(self.ptr_e_ponteiro.get()),
+        )
+
+    def limpar_resultados(self):
+        self.l_cal_val["text"] = "--"
+        self.l_cal_bias_val["text"] = "--"
+        self.l_cal_scale_val["text"] = "--"
+        self.l_cal_val_int["text"] = "--"
+        self.l_cal_val_hex["text"] = "--"
+
+    def exibir_resultado(self, resultado):
+        corrente, bias_calc, scale_calc, raw_calc, raw_hexa16 = resultado
+        self.l_cal_val["text"] = str(corrente)
+        self.l_cal_bias_val["text"] = str(bias_calc)
+        self.l_cal_scale_val["text"] = str(scale_calc)
+        self.l_cal_val_int["text"] = str(raw_calc)
+        self.l_cal_val_hex["text"] = str(raw_hexa16)
+
+    def calcular(self):
+        try:
+            valores_entrada = self.ler_valores_entrada()
+        except ValueError:
+            self.limpar_resultados()
+            messagebox.showerror("Erro", "Informe apenas valores numericos")
+            return None
+
+        try:
+            resultado = calcular_valores(*valores_entrada)
+        except ValueError as exc:
+            self.limpar_resultados()
+            messagebox.showerror("Erro", str(exc))
+            return None
+
+        self.exibir_resultado(resultado)
+        return resultado
+
+    def plotar(self, bias_val, scale_val, raw_val):
+        graph_min, graph_max, _ = limites_grafico(bias_val, scale_val)
+        pontos_analise = coletar_pontos_analise(bias_val, scale_val, graph_min, graph_max, raw_val)
+        desenhar_pontos_analise(self.bias_graph, pontos_analise, graph_min, graph_max)
+        atualizar_legenda(self.legend_canvas, pontos_analise, graph_min, graph_max)
         return "break"
-    
-    calculo_valido = True
-    l_cal_val["text"] = str(corrente)
-    l_cal_bias_val["text"] = str(bias)
-    l_cal_scale_val["text"]= str(scale)
-    l_cal_val_int["text"]= str(raw_int16)
-    l_cal_val_hex["text"]= str(raw_hexa16)
-       
-    #print (int(raw_int16))
-    return "break"
+
+    def acionar(self):
+        resultado = self.calcular()
+        if resultado is not None:
+            _, bias_calc, scale_calc, raw_calc, _ = resultado
+            self.plotar(bias_calc, scale_calc, raw_calc)
+        return "break"
+
+    def about(self):
+        janela_about = tk.Toplevel(self.app)
+        janela_about.title("About")
+        janela_about.resizable(False, False)
+        janela_about.transient(self.app)
+        janela_about.grab_set()
+
+        frame_about = tk.Frame(janela_about, padx=16, pady=14)
+        frame_about.pack(fill="both", expand=True)
+
+        tk.Label(frame_about, text=APP_DESCRIPTION, anchor=tk.W, justify="left").pack(fill="x")
+        tk.Label(frame_about, text=f"Author: {APP_AUTHOR}", anchor=tk.W).pack(fill="x", pady=(10, 0))
+        tk.Label(frame_about, text=f"Version: {APP_VERSION}", anchor=tk.W).pack(fill="x")
+        tk.Label(frame_about, text=f"Commit: {commit_atual()}", anchor=tk.W).pack(fill="x")
+        tk.Label(frame_about, text=f"Date: {datetime.date.today().isoformat()}", anchor=tk.W).pack(fill="x")
+        tk.Label(frame_about, text=f"GitHub: {APP_GITHUB}", anchor=tk.W).pack(fill="x", pady=(0, 10))
+        tk.Button(frame_about, text="OK", width=8, command=janela_about.destroy).pack(anchor="center")
+
+        janela_about.update_idletasks()
+        x_pos = self.app.winfo_rootx() + (self.app.winfo_width() - janela_about.winfo_width()) // 2
+        y_pos = self.app.winfo_rooty() + (self.app.winfo_height() - janela_about.winfo_height()) // 2
+        janela_about.geometry(f"+{x_pos}+{y_pos}")
+        return "break"
+
+    def run(self):
+        self.app.mainloop()
 
 
-#------------------------------------------------------
-#acao botao info
-def about():
-    janela_about = tk.Toplevel(app)
-    janela_about.title("About")
-    janela_about.resizable(False, False)
-    janela_about.transient(app)
-    janela_about.grab_set()
+def main():
+    IndicadorApp().run()
 
-    frame_about = tk.Frame(janela_about, padx=16, pady=14)
-    frame_about.pack(fill="both", expand=True)
 
-    tk.Label(frame_about, text=APP_DESCRIPTION, anchor=tk.W, justify="left").pack(fill="x")
-    tk.Label(frame_about, text=f"Author: {APP_AUTHOR}", anchor=tk.W).pack(fill="x", pady=(10, 0))
-    tk.Label(frame_about, text=f"Version: {APP_VERSION}", anchor=tk.W).pack(fill="x")
-    tk.Label(frame_about, text=f"Commit: {commit_atual()}", anchor=tk.W).pack(fill="x")
-    tk.Label(frame_about, text=f"Date: {datetime.date.today().isoformat()}", anchor=tk.W).pack(fill="x")
-    tk.Label(frame_about, text=f"GitHub: {APP_GITHUB}", anchor=tk.W).pack(fill="x", pady=(0, 10))
-    tk.Button(frame_about, text="OK", width=8, command=janela_about.destroy).pack(anchor="center")
-
-    janela_about.update_idletasks()
-    x_pos = app.winfo_rootx() + (app.winfo_width() - janela_about.winfo_width()) // 2
-    y_pos = app.winfo_rooty() + (app.winfo_height() - janela_about.winfo_height()) // 2
-    janela_about.geometry(f"+{x_pos}+{y_pos}")
-    return "break"
-#-----------------------------------------------------------------------
-#BUTTON about
-footer_frame = tk.Frame(content_frame, height=34)
-footer_frame.pack(fill="x", pady=(8, 2))
-footer_frame.pack_propagate(False)
-
-b_calcular = tk.Button(footer_frame, text="Calcular", width=7, command=acionar, font=("Arial", 10))
-b_calcular.place(relx=0.5, rely=0.5, anchor="center")
-
-b_about = tk.Button(footer_frame, text="About", width=4, command=about, font=("Arial", 7), padx=1, pady=1, anchor="center")
-b_about.place(relx=0.98, rely=0.5, anchor="e")
-
-#------------------------------
-# BINDINGS
-app.bind_all("<Return>", lambda x: acionar())
-app.mainloop()
+if __name__ == "__main__":
+    main()
